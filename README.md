@@ -146,5 +146,3 @@ curatorConfig:
       unit: days
       unit_count: 14
 ```
-# EDCOP-ELASTICSEARCH
-# EDCOP-ELASTICSEARCH

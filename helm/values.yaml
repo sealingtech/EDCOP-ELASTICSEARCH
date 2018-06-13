@@ -1,7 +1,7 @@
 # EDCOP Elasticsearch Chart values
 images:
-  # Base image (es): docker.elastic.co/elasticsearch/elasticsearch:6.3
-  elasticsearch: docker.elastic.co/elasticsearch/elasticsearch:6.3
+  # Base image (es): docker.elastic.co/elasticsearch/elasticsearch:6.2.4
+  elasticsearch: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
   curator: bobrik/curator
 networks:
   # Overlay is the name of the default cni network
@@ -45,4 +45,5 @@ curatorConfig:
       disable_action: False
       # Deletes indices older than the specified units
       unit: days
-unit_count: 14 
+      unit_count: 14 
+    
