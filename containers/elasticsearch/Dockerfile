@@ -1,5 +1,5 @@
-FROM docker.elastic.co/elasticsearch/elasticsearch:6.3 ADD 
-elasticsearch.yml /usr/share/elasticsearch/config/
+FROM docker.elastic.co/elasticsearch/elasticsearch:6.3 
+ADD elasticsearch.yml /usr/share/elasticsearch/config/
 
 USER root RUN yum -y update && \
 	yum -y install net-tools && \
