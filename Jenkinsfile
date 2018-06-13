@@ -6,7 +6,7 @@ node {
 
 
   def pwd = pwd()
-  def tool_name="bro"
+  def tool_name="elasticsearch"
   def container_dir = "$pwd/container/"
   def custom_image = "images.elasticsearch"
   def custom_values_url = 
