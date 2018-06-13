@@ -7,7 +7,8 @@ USER root RUN yum -y update && \
 config/elasticsearch.yml && \
 	yum -y clean all
 
-ENV DISCOVERY_SERVICE es-discovery ENV MEMORY_LOCK false
+ENV DISCOVERY_SERVICE es-discovery 
+ENV MEMORY_LOCK false
 
 USER elasticsearch
 
