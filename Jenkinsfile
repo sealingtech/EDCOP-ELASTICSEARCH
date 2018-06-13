@@ -9,12 +9,10 @@ node {
   def tool_name="elasticsearch"
   def container_dir = "$pwd/container/"
   def custom_image = "images.elasticsearch"
-  def custom_values_url = 
-"http://repos.sealingtech.com/cisco-c240-m5/elasticsearch/values.yaml"
+  def custom_values_url = "http://repos.sealingtech.com/cisco-c240-m5/elasticsearch/values.yaml"
   def user_id = ''
   wrap([$class: 'BuildUser']) {
-      echo 
-"userId=${BUILD_USER_ID},fullName=${BUILD_USER},email=${BUILD_USER_EMAIL}"
+      echo "userId=${BUILD_USER_ID},fullName=${BUILD_USER},email=${BUILD_USER_EMAIL}"
       user_id = "${BUILD_USER_ID}"
   }
 
@@ -23,8 +21,7 @@ node {
   def container_tag = "gcr.io/edcop-dev/$user_id-$tool_name"
 
   stage('Clone repository') {
-      /* Let's make sure we have the repository cloned to our 
-workspace */
+      /* Let's make sure we have the repository cloned to our workspace */
       checkout scm
   }
 
@@ -34,8 +31,7 @@ workspace */
        * docker build on the command line */
       println("Building $container_tag:$env.BUILD_ID")
 
-      app = 
-docker.build("$container_tag:$env.BUILD_ID","./container/")
+      app = docker.build("$container_tag:$env.BUILD_ID","./container/")
   }
 
 
@@ -43,10 +39,8 @@ docker.build("$container_tag:$env.BUILD_ID","./container/")
       /* Finally, we'll push the image with two tags:
        * First, the incremental build number from Jenkins
        * Second, the 'latest' tag.
-       * Pushing multiple tags is cheap, as all the layers are 
-reused. */
-      docker.withRegistry('https://gcr.io/edcop-dev/', 
-'gcr:edcop-dev') {
+       * Pushing multiple tags is cheap, as all the layers are reused. */
+      docker.withRegistry('https://gcr.io/edcop-dev/', 'gcr:edcop-dev') {
           app.push("$env.BUILD_ID")
       }
   }
@@ -56,6 +50,6 @@ reused. */
   }
 
   stage('helm deploy') {
-     sh "helm install --set custom_image='$container_tag:$env.BUILD_ID' --name='$user_id-$tool_name-$env.BUILD_ID' -f custom_values_url $tool_name"
+      sh "helm install --set $custom_image='$container_tag:$env.BUILD_ID' --name='$user_id-$tool_name-$env.BUILD_ID' -f $custom_values_url $tool_name"
   }
 }
