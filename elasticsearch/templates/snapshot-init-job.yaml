@@ -13,20 +13,21 @@ spec:
       name: {{ template "elasticsearch.name" . }}-snapshot-job
       annotations:
         "helm.sh/hook": "post-install"  # Run after all other services start
-  containers:
-  - name: snapshot-init-job
-    image: centos
-    imagePullPolicy: Always
-    command: ["/snapshot-init.sh"]
-    volumeMounts:
-    - name: snapshot-init-script
-      mountPath: /snapshot-init.sh
-      subPath: snapshot-init.sh
-  volumes:
-  - name: snapshot-init-script
-    configMap:
-      name: {{ template "elasticsearch.fullname" . }}-snapshot-init-script
-      defaultMode: 0744
-  restartPolicy: OnFailure
+    spec:
+      containers:
+      - name: snapshot-init-job
+        image: centos
+        imagePullPolicy: Always
+        command: ["/snapshot-init.sh"]
+        volumeMounts:
+        - name: snapshot-init-script
+          mountPath: /snapshot-init.sh
+          subPath: snapshot-init.sh
+      volumes:
+      - name: snapshot-init-script
+        configMap:
+          name: {{ template "elasticsearch.fullname" . }}-snapshot-init-script
+          defaultMode: 0744
+      restartPolicy: OnFailure
 {{ end }}
 
