@@ -17,6 +17,10 @@ elasticsearchConfig:
   runAsUser: 2000
   # Nodes refers to the number of worker nodes you have
   workerNodes: 4
+  master:
+    replicas: 3
+    # Set to 'true' to enable data to be stored on master node
+    data: false
   env:
     clustername: edcop
     javaopts: -Xms16g -Xmx16g

@@ -9,7 +9,7 @@ metadata:
     component: {{ template "elasticsearch.name" . }}
     role: master
 spec:
-  replicas: 1
+  replicas: {{ .Values.elasticsearchConfig.master.replicas }}
   template:
     metadata:
       name: {{ template "elasticsearch.name" . }}-master
@@ -41,6 +41,12 @@ spec:
           value: "{{ .Values.elasticsearchConfig.env.javaopts }}"
         - name: DISCOVERY_SERVICE
           value: es-discovery
+        - name: NODE_DATA
+          {{ if .Values.elasticsearchConfig.master.data }}
+          value: "true"
+          {{ else }}
+          value: "false"
+          {{ end }}
         ports:
         - name: cport-9200
           containerPort: 9200
@@ -52,8 +58,6 @@ spec:
             memory: "{{ .Values.elasticsearchConfig.limits.memory }}"
         imagePullPolicy: Always
         volumeMounts:
-        - mountPath: /usr/share/elasticsearch/data
-          name: esdata
         - mountPath: /usr/share/elasticsearch/config/jvm.options
           subPath: jvm.options
           name: elasticsearch-jvm
@@ -64,17 +68,23 @@ spec:
         - mountPath: /var/EDCOP/snapshots
           name: elasticsearch-snapshots
         {{ end }}
+        {{ if .Values.elasticsearchConfig.master.data }}
+        - mountPath: /usr/share/elasticsearch/data
+          name: esdata
+        {{ end }}
 
       volumes:
-      - name: esdata
-        hostPath:
-          path: {{ .Values.volumes.data }}
       - name: elasticsearch-jvm
         configMap:
           name: {{ template "elasticsearch.fullname" . }}-jvm
       - name: elasticsearch-config
         configMap:
           name: {{ template "elasticsearch.fullname" . }}-config
+      {{ if .Values.elasticsearchConfig.master.data  }}
+      - name: esdata
+        hostPath:
+          path: {{ .Values.volumes.data }}
+      {{ end }}
       {{ if .Values.snapshotConfig.enabled }}
       - name: elasticsearch-snapshots
         persistentVolumeClaim:
