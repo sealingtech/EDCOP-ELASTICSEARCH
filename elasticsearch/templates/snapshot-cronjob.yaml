@@ -23,7 +23,7 @@ spec:
             imagePullPolicy: Always
             command: ["/snapshot.sh"]
             volumeMounts:
-              - name: snapshot-config
+              - name: snapshot-script
                 mountPath: /snapshot.sh
                 subPath: snapshot.sh
           volumes:
