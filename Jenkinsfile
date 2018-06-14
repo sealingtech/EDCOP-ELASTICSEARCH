@@ -10,7 +10,7 @@ node {
   def support_tool_name="curator"
   def container_dir = "$pwd/containers/"
   def custom_image = "images.elasticsearch"
-  #def custom_values_url = "http://repos.sealingtech.com/cisco-c240-m5/elasticsearch/values.yaml"
+  /* #def custom_values_url = "http://repos.sealingtech.com/cisco-c240-m5/elasticsearch/values.yaml" */
   def user_id = ''
   wrap([$class: 'BuildUser']) {
       echo "userId=${BUILD_USER_ID},fullName=${BUILD_USER},email=${BUILD_USER_EMAIL}"
