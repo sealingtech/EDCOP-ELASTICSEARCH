@@ -1,32 +1,28 @@
-apiVersion: apps/v1
-kind: StatefulSet
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  name: {{ template "elasticsearch.fullname" . }}
+  name: {{ template "elasticsearch.fullname" . }}-master
   labels:
     app: {{ template "elasticsearch.name" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     component: {{ template "elasticsearch.name" . }}
-    role: client
+    role: master
 spec:
-  serviceName: "data-service"
-  replicas: {{ .Values.elasticsearchConfig.workerNodes }}
-  selector:
-    matchLabels:
-      component: {{ template "elasticsearch.name" . }}
+  replicas: 1
   template:
     metadata:
-      name: {{ template "elasticsearch.name" . }}
+      name: {{ template "elasticsearch.name" . }}-master
       labels:
         component: {{ template "elasticsearch.name" . }}
-        role: client
+        role: master
       annotations:
         networks: '[
         { "name": "{{ .Values.networks.overlay }}" }
       ]'
     spec:
       containers:
-      - name: es-client
+      - name: es-master
         image: {{ .Values.images.elasticsearch }}
         securityContext:
           runAsUser: {{ .Values.elasticsearchConfig.runAsUser }}
@@ -38,7 +34,7 @@ spec:
         - name: CLUSTER_NAME
           value: {{ .Values.elasticsearchConfig.env.clustername }}
         - name: NODE_MASTER
-          value: "false"
+          value: "true"
         - name: NETWORK_HOST
           value: _eth0_,_lo_
         - name: ES_JAVA_OPTS
@@ -51,9 +47,6 @@ spec:
         - name: cport-9300
           containerPort: 9300
         resources:
-          requests:
-            cpu: "{{ .Values.elasticsearchConfig.requests.cpu }}"
-            memory: "{{ .Values.elasticsearchConfig.requests.memory }}"
           limits:
             cpu: "{{ .Values.elasticsearchConfig.limits.cpu }}"
             memory: "{{ .Values.elasticsearchConfig.limits.memory }}"
@@ -67,6 +60,8 @@ spec:
         - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
           subPath: elasticsearch.yml
           name: elasticsearch-config
+        - mountPath: /var/EDCOP/snapshots
+          name: elasticsearch-snapshots
 
       volumes:
       - name: esdata
@@ -78,7 +73,10 @@ spec:
       - name: elasticsearch-config
         configMap:
           name: {{ template "elasticsearch.fullname" . }}-config
+      - name: elasticsearch-snapshots
+        persistentVolumeClaim:
+          claimName: {{ template "elasticsearch.name" . }}-snapshots
       restartPolicy: Always
       dnsPolicy: ClusterFirst
       nodeSelector:
-        nodetype: {{ .Values.nodeSelector.client }}
+        nodetype: {{ .Values.nodeSelector.master }}
