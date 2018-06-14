@@ -7,6 +7,7 @@ node {
 
   def pwd = pwd()
   def tool_name="elasticsearch"
+  def support_tool_name="curator"
   def container_dir = "$pwd/containers/"
   def custom_image = "images.elasticsearch"
   def custom_values_url = "http://repos.sealingtech.com/cisco-c240-m5/elasticsearch/values.yaml"
@@ -19,6 +20,7 @@ node {
   sh "env"
 
   def container_tag = "gcr.io/edcop-dev/$user_id-$tool_name"
+  def support_container_tag = "gcr.io/edcop-dev/$user_id-$support_tool_name"
 
   stage('Clone repository') {
       /* Let's make sure we have the repository cloned to our workspace */
@@ -26,17 +28,18 @@ node {
   }
 
 
-  stage('Build image') {
+  stage('Build images') {
       /* This builds the actual image; synonymous to
        * docker build on the command line */
-      println("Building $container_tag:$env.BUILD_ID")
+      println("Building $container_tag:$env.BUILD_ID and $support_container_tag:$env.BUILD_ID")
 
-      app = docker.build("$container_tag:$env.BUILD_ID","./containers/")
+      app = docker.build("$container_tag:$env.BUILD_ID","./containers/elasticsearch")
+      app = docker.build("$support_container_tag:$env.BUILD_ID","./containers/curator")
   }
 
 
-  stage('Push image') {
-      /* Finally, we'll push the image with two tags:
+  stage('Push images') {
+      /* Finally, we'll push the images with two tags:
        * First, the incremental build number from Jenkins
        * Second, the 'latest' tag.
        * Pushing multiple tags is cheap, as all the layers are reused. */
@@ -50,6 +53,7 @@ node {
   }
 
   stage('helm deploy') {
-      sh "helm install --set $custom_image='$container_tag:$env.BUILD_ID' --name='$user_id-$tool_name-$env.BUILD_ID' -f $custom_values_url $tool_name"
+      /* Don't actually need the images, the official ones work */
+      sh "helm install --name='$user_id-$tool_name-$env.BUILD_ID' -f $custom_values_url $tool_name"
   }
 }
