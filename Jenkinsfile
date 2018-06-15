@@ -97,7 +97,7 @@ node {
     def master_command2="kubectl logs $first_master_pod | grep started"
     println("Master logs:")
     println(master_command2) 
-    sh(master_command2)
+    sh(master_command)
 
     /* Worker */
     def worker_command="kubectl get pods  | grep $user_id-$tool_name-$env.BUILD_ID-$tool_name | awk "+'{\'print $1\'}'+"| head -1"
@@ -105,6 +105,6 @@ node {
     def worker_command2="kubectl logs $first_worker_pod | grep started"
     println("Worker logs:")
     println(worker_command2)
-    sh(worker_command2)
+    sh(worker_command)
   }
 }
