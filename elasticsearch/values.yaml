@@ -18,9 +18,10 @@ elasticsearchConfig:
   # Nodes refers to the number of worker nodes you have
   workerNodes: 4
   master:
-    replicas: 3
+    # Nodes refers to the number of master nodes you have
+    nodes: 1
     # Set to 'true' to enable data to be stored on master node
-    data: false
+    data: true
   env:
     clustername: edcop
     javaopts: -Xms16g -Xmx16g
