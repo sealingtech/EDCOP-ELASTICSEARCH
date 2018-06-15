@@ -11,6 +11,9 @@ metadata:
 spec:
   serviceName: "es-discovery"
   replicas: {{ .Values.elasticsearchConfig.master.nodes }}
+  selector:
+    matchLabels:
+      component: {{ template "elasticsearch.name" . }}
   template:
     metadata:
       name: {{ template "elasticsearch.name" . }}-master
