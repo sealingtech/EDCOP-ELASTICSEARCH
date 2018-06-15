@@ -56,4 +56,55 @@ node {
       /* Don't actually need the images, the official ones work */
       sh "helm install --name='$user_id-$tool_name-$env.BUILD_ID' $tool_name"
   }
+
+  stage('sleeping 5 minutes') {
+    sleep(300)
+  }
+
+  stage('Verifying running pods') {
+    /* Master */
+    def master_number_ready=sh(returnStdout: true, script: "kubectl get deployment $user_id-$tool_name-$env.BUILD_ID-$tool_name-master  -o jsonpath={.status.readyReplicas}").trim()
+    def master_number_scheduled=sh(returnStdout: true, script: "kubectl get deployment $user_id-$tool_name-$env.BUILD_ID-$tool_name-master  -o jsonpath={.status.replicas}").trim()
+    
+    /* Workers */
+    def worker_number_scheduled=sh(returnStdout: true, script: "kubectl get sts $user_id-$tool_name-$env.BUILD_ID-$tool_name  -o jsonpath={.status.replicas}").trim()
+    def worker_number_current=sh(returnStdout: true, script: "kubectl get sts $user_id-$tool_name-$env.BUILD_ID-$tool_name  -o jsonpath={.status.currentReplicas}").trim()
+    def worker_number_ready=sh(returnStdout: true, script: "kubectl get sts $user_id-$tool_name-$env.BUILD_ID-$tool_name  -o jsonpath={.status.readyReplicas}").trim()
+
+    /* Printing Result */
+    println("[MASTER] Ready pods: $master_number_ready  Scheduled pods: $number_scheduled")
+    println("[WORKER] Ready pods: $worker_number_ready  Current Pods: $worker_number_current  Scheduled pods: $worker_number_scheduled")
+
+    /* Verifying Result */
+    if(master_number_ready==master_number_scheduled) {
+      println("Master pods are running")
+    } else {
+      println("Some or all of the master pods failed")
+      error("Some or all of the master pods failed")
+    } 
+    if(worker_number_ready==worker_number_scheduled) {
+      println("Worker pods are running")
+    } else {
+      println("Some or all of the worker pods failed")
+      error("Some or all of the worker pods failed")
+    }
+  }
+
+  stage('Verifying Elasticsearch started on first pods') {
+    /* Master */
+    def master_command="kubectl get pods  | grep $user_id-$tool_name-$env.BUILD_ID-$tool_name-master | awk "+'{\'print $1\'}'+"| head -1"
+    def first_master_pod=sh(returnStdout: true, script: master_command)
+    def master_command2="kubectl logs $first_master_pod | grep started"
+    println("Master logs:")
+    println(master_command2) 
+    sh(master_command)
+
+    /* Worker */
+    def worker_command="kubectl get pods  | grep $user_id-$tool_name-$env.BUILD_ID-$tool_name | awk "+'{\'print $1\'}'+"| head -1"
+    def first_worker_pod=sh(returnStdout: true, script: worker_command)
+    def worker_command2="kubectl logs $first_worker_pod | grep started"
+    println("Worker logs:")
+    println(worker_command2)
+    sh(worker_command)
+  }
 }
