@@ -72,7 +72,7 @@ node {
     def worker_number_ready=sh(returnStdout: true, script: "kubectl get sts $user_id-$tool_name-$env.BUILD_ID-$tool_name  -o jsonpath={.status.readyReplicas}").trim()
 
     /* Printing Result */
-    println("[MASTER] Ready pods: $master_number_ready  Scheduled pods: $number_scheduled")
+    println("[MASTER] Ready pods: $master_number_ready  Scheduled pods: $master_number_scheduled")
     println("[WORKER] Ready pods: $worker_number_ready  Current Pods: $worker_number_current  Scheduled pods: $worker_number_scheduled")
 
     /* Verifying Result */
