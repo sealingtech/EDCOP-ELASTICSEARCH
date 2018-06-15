@@ -108,4 +108,19 @@ node {
     println(worker_command2)
     sh(worker_command)
   }
+
+  stage('Verify cluster health') {
+    /* Uses master pod */
+    def master_command="kubectl get pods  | grep $user_id-$tool_name-$env.BUILD_ID-$tool_name-master | awk "+'{\'print $1\'}'+"| head -1"
+    def first_master_pod=sh(returnStdout: true, script: master_command)
+    def health=(returnStdout: true, script: "kubectl exec -it $first_master_pod -- bash \\"curl -X --head data-service:9200/_cluster/health\\" | jq --raw-output\\'.status\\'")
+
+    /* Health should be green */
+    if(health=="green") {
+      println("Cluster health is green")
+    } else {
+      println("Cluster health isn't green, something went wrong.")
+      error("Cluster health isn't green, something went wrong.")
+    }
+  }
 }
