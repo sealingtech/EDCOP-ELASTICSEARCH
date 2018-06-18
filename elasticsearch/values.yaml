@@ -45,7 +45,7 @@ snapshotConfig:
     storage: 10Gi
 curatorConfig:
   # Set to 'true' to enable it, false to disable. 
-  enabled: true
+  enabled: false
   # Input how often the curator should run in cronjob format
   cronjob_schedule: "1 0 * * *"
   # Input how many failed/successful pods should be kept after completion (0 for none)
