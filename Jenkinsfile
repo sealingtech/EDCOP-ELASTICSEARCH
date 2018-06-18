@@ -114,7 +114,7 @@ node {
     def worker_command="kubectl get pods  | grep $user_id-$tool_name-$env.BUILD_ID-$tool_name | awk "+'{\'print $1\'}'+"| head -1"
     def first_worker_pod=sh(returnStdout: true, script: worker_command)
     def health_command="kubectl exec -it $first_worker_pod -- bash -c \"curl -X --head data-service" + ':' + "9200/_cluster/health\" | jq --raw-output \'.status\'"
-    def health=sh(returnStdout: true, script: health_command).trim()
+    def health=sh(returnStdout: true, script: health_command)
 
     /* Health should be green */
     if(health=="green") {
