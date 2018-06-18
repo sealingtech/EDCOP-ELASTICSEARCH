@@ -16,7 +16,7 @@ elasticsearchConfig:
   # runAsUser refers to the UID of the user who owns the persistent data location specified above
   runAsUser: 2000
   # Nodes refers to the number of worker nodes you have
-  workerNodes: 4
+  workerNodes: 2
   master:
     # Nodes refers to the number of master nodes you have
     nodes: 1
