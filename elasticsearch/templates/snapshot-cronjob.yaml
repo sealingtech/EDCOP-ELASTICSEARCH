@@ -3,6 +3,7 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: {{ template "elasticsearch.fullname" . }}-snapshot
+  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "elasticsearch.name" . }}-snapshot
     heritage: {{ .Release.Service }}

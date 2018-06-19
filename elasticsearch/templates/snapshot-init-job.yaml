@@ -3,6 +3,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ template "elasticsearch.fullname" . }}-snapshot-init-job
+  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "elasticsearch.name" . }}-snapshot
     heritage: {{ .Release.Service }}

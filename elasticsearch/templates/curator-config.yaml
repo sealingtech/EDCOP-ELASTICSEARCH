@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ template "elasticsearch.fullname" . }}-curator-config
+  namespace: {{ .Values.namespace }}
 data:
   actions.yml: |
     ---

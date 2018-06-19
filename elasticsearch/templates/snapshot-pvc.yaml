@@ -7,7 +7,7 @@ metadata:
     created-by: {{ template "elasticsearch.name" . }} 
     name: {{ template "elasticsearch.name" . }}-snapshots
   name: {{ template "elasticsearch.name" . }}-snapshots
-  namespace: default
+  namespace: {{ .Values.namespace }}
 spec:
   accessModes:
   - ReadWriteMany
