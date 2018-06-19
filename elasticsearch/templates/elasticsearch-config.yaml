@@ -97,7 +97,7 @@ data:
     # Disable X-Pack paid services, enable monitoring
     xpack.graph.enabled: false
     xpack.ml.enabled: false
-    xpack.security.enabled: true
+    xpack.security.enabled: false
     xpack.watcher.enabled: false
     xpack.monitoring.enabled: true
 {{ if .Values.snapshotConfig.enabled }}
