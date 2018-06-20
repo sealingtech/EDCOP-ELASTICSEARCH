@@ -120,9 +120,11 @@ node {
     /* Health should be green */
     if(health=="green") {
       println("Cluster health is green")
+    } else if (health=="yellow") {
+      println("WARNING: Cluster health is yellow")
     } else {
-      println("Cluster health isn't green, something went wrong.")
-      error("Cluster health isn't green, something went wrong.")
+      println("ERROR: Cluster health is red, something went wrong")
+      error("ERROR: Cluster health is red, something went wrong")
     }
   }
 }
