@@ -47,9 +47,9 @@ spec:
         - name: DISCOVERY_SERVICE
           value: es-discovery
         ports:
-        - name: cport-9200
+        - name: http-9200
           containerPort: 9200
-        - name: cport-9300
+        - name: tcp-9300
           containerPort: 9300
         resources:
           requests:
