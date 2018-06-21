@@ -10,6 +10,7 @@ Table of Contents
 	* [Node Selector](#node-selector)
 	* [Elasticsearch Configuration](#elasticsearch-configuration)
 		* [General](#general)
+		* [Master Settings](#master-settings)
 		* [Environment](#environment)
 		* [Resource Limits](#resource-limits)
 	* [Snapshot Configuration](#snapshot-configuration)
@@ -23,7 +24,7 @@ Table of Contents
 # Configuration Guide
 
 Within this configuration guide, you will find instructions for modifying Elasticsearch's helm chart. All changes should be made in the *values.yaml* file.
-Please share any bugs or features requests via GitHub issues.
+Please share any bugs or feature requests via GitHub issues.
  
 ## Image Repository
 
@@ -31,7 +32,7 @@ By default, Elasticsearch is pulled from Elastic's official repository and the C
  
 ```
 images:
-  elasticsearch: docker.elastic.co/elasticsearch/elasticsearch:6.3.0
+  elasticsearch: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
   curator: bobrik/curator
 ```
  
@@ -66,7 +67,7 @@ volumes:
 	  
 ## Node Selector
 
-This value tells Kubernetes which hosts the daemonset should be deployed to by using labels given to the hosts. Hosts without the defined label will not receive pods. 
+This value tells Kubernetes which hosts the statefulsets should be deployed to by using labels given to the hosts. Hosts without the defined label will not receive pods. 
  
 ```
 nodeSelector:
@@ -89,18 +90,36 @@ Elasticsearch is deployed as a statefulset spread across all of the worker nodes
 
 ### General
 
-In order to prevent permission issues, elasticsearch is required to run as a different user and that user should own the volume directory you specified above. This user must e created beforehand and should only have access to this directory/subdirectories for security purposes. Enter the UID of this user in the space below:
+In order to prevent permission issues, Elasticsearch is required to run as a different user and that user should own the volume directory you specified above. This user must be created beforehand and should only have access to this directory/subdirectories for security purposes. Enter the UID of this user in the space below:
 
 ```
 elasticsearchConfig:
   runAsUser: 2000
 ```
 
-Since Elasticsearch's workers are run as statefulsets, you need to specify how many instances you want to maintain. By default, this value is 3, but should be scaled to include the number of worker nodes you have. Do not include the master as one instance because it is deployed in a seperate deployment that only runs on the master. 
+Since Elasticsearch's workers are run as Statefulsets, you need to specify how many instances you want to maintain. By default, this value is 3, but should be scaled to include the number of worker nodes you have. Do not include the master as one instance because it is deployed in a seperate deployment that only runs on the master. 
 
 ```
 elasticsearchConfig:
   workerNodes: 3
+```
+
+### Master Settings
+
+Since the Elasticsearch master nodes are also run as Statefulsets, you will need to specify how many master nodes you want. The default value is 1, but should be scaled in the same manner as the workers. Again, do not include the number of workers in this number
+
+```
+elasticsearchConfig:
+  master:
+    nodes: 1
+```
+
+In order to accomodate master nodes that do not have a lot of storage, you can prevent Elasticsearch from storing data on the master server, meaning all of the data will be stored on the workers. Setting this value to *false* will prevent the master from storing data as well as disabling the hostpath setting for master nodes. 
+
+```
+elasticsearchConfig:
+  master:
+    data: true
 ```
 
 ### Environment
@@ -159,7 +178,7 @@ The EDCOP Elasticsearch Helm chart comes bundled with Elasticsearch's Curator an
 
 ### Schedule
 
-As mentioned before, the Curator is run as a Kubernetes Cron Job, which uses the Cron format as described [here](http://www.nncron.ru/help/EN/working/cron-format.htm). The default setting runs just after midnight each day.
+Just like Snapshots, the Curator is run as a Kubernetes Cron Job, which uses the Cron format as described [here](http://www.nncron.ru/help/EN/working/cron-format.htm). The default setting runs just after midnight each day.
 
 ```
 curatorConfig:
