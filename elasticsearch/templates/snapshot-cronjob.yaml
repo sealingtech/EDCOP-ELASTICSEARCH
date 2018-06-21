@@ -1,4 +1,4 @@
-{{ if .Values.snapshotConfig.enabled }}
+{{- if .Values.snapshotConfig.enabled -}}
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
@@ -33,4 +33,4 @@ spec:
               name: {{ template "elasticsearch.fullname" . }}-snapshot-script
               defaultMode: 0744
           restartPolicy: OnFailure 
-{{ end }}
+{{- end -}}
