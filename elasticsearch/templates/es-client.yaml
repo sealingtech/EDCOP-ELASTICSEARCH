@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "elasticsearch.fullname" . }}
+  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "elasticsearch.name" . }}
     heritage: {{ .Release.Service }}
@@ -46,9 +47,9 @@ spec:
         - name: DISCOVERY_SERVICE
           value: es-discovery
         ports:
-        - name: cport-9200
+        - name: http-9200
           containerPort: 9200
-        - name: cport-9300
+        - name: tcp-9300
           containerPort: 9300
         resources:
           requests:
@@ -67,6 +68,10 @@ spec:
         - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
           subPath: elasticsearch.yml
           name: elasticsearch-config
+        {{ if .Values.snapshotConfig.enabled }}
+        - mountPath: /var/EDCOP/snapshots
+          name: elasticsearch-snapshots
+        {{ end }}
 
       volumes:
       - name: esdata
@@ -78,6 +83,11 @@ spec:
       - name: elasticsearch-config
         configMap:
           name: {{ template "elasticsearch.fullname" . }}-config
+      {{ if .Values.snapshotConfig.enabled }}
+      - name: elasticsearch-snapshots
+        persistentVolumeClaim:
+          claimName: {{ template "elasticsearch.name" . }}-snapshots
+      {{ end }}
       restartPolicy: Always
       dnsPolicy: ClusterFirst
       nodeSelector:

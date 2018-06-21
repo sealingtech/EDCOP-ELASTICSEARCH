@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: es-discovery
-  namespace: default
+  namespace: {{ .Values.namespace }}
   labels:
     component: {{ template "elasticsearch.name" . }}
     role: master
@@ -15,3 +15,4 @@ spec:
   selector:
     component: {{ template "elasticsearch.name" . }}
     role: master
+  clusterIP: None
