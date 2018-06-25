@@ -12,6 +12,10 @@ spec:
     protocol: TCP
     port: 9300 
     targetPort: 9300
+  - name: tcp-9200
+    protocol: TCP
+    port: 9200
+    targetPort: 9200
   selector:
     component: {{ template "elasticsearch.name" . }}
     role: master
