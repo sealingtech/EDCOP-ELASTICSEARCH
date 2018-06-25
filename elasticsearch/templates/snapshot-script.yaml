@@ -1,4 +1,4 @@
-{{ if .Values.snapshotConfig.enabled }}
+{{- if .Values.snapshotConfig.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -24,4 +24,4 @@ data:
     DATE="${DATE//-/_}"
     
     curl -X PUT "data-service:9200/_snapshot/es_6x_snapshots/snapshot_$DATE?wait_for_completion=true"
-{{ end }}
+{{- end -}}

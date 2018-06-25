@@ -1,4 +1,4 @@
-{{ if .Values.curatorConfig.enabled }}
+{{- if .Values.curatorConfig.enabled -}}
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
@@ -37,4 +37,4 @@ spec:
           restartPolicy: OnFailure 
           nodeSelector:
             nodetype: {{ .Values.nodeSelector.master }}
-{{ end }}
+{{- end -}}

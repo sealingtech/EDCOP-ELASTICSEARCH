@@ -58,6 +58,9 @@ spec:
         - name: tcp-9300
           containerPort: 9300
         resources:
+          requests:
+            cpu: "{{ .Values.elasticsearchConfig.requests.cpu }}"
+            memory: "{{ .Values.elasticsearchConfig.requests.memory }}"
           limits:
             cpu: "{{ .Values.elasticsearchConfig.limits.cpu }}"
             memory: "{{ .Values.elasticsearchConfig.limits.memory }}"
@@ -69,14 +72,14 @@ spec:
         - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
           subPath: elasticsearch.yml
           name: elasticsearch-config
-        {{ if .Values.snapshotConfig.enabled }}
+        {{- if .Values.snapshotConfig.enabled }}
         - mountPath: /var/EDCOP/snapshots
           name: elasticsearch-snapshots
-        {{ end }}
-        {{ if .Values.elasticsearchConfig.master.data }}
+        {{- end }}
+        {{- if .Values.elasticsearchConfig.master.data }}
         - mountPath: /usr/share/elasticsearch/data
           name: esdata
-        {{ end }}
+        {{- end }}
 
       volumes:
       - name: elasticsearch-jvm
@@ -85,16 +88,16 @@ spec:
       - name: elasticsearch-config
         configMap:
           name: {{ template "elasticsearch.fullname" . }}-config
-      {{ if .Values.elasticsearchConfig.master.data  }}
+      {{- if .Values.elasticsearchConfig.master.data }}
       - name: esdata
         hostPath:
           path: {{ .Values.volumes.data }}
-      {{ end }}
-      {{ if .Values.snapshotConfig.enabled }}
+      {{- end }}
+      {{- if .Values.snapshotConfig.enabled }}
       - name: elasticsearch-snapshots
         persistentVolumeClaim:
           claimName: {{ template "elasticsearch.name" . }}-snapshots
-      {{ end }}
+      {{- end }}
       restartPolicy: Always
       dnsPolicy: ClusterFirst
       nodeSelector:

@@ -5,11 +5,17 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     component: {{ template "elasticsearch.name" . }}
+    role: client
 spec:
   ports:
   - name: tcp-9200
     protocol: TCP
     port: 9200 
     targetPort: 9200
+  - name: tcp-9300
+    protocol: TCP
+    port: 9300
+    targetPort: 9300
   selector:
     component: {{ template "elasticsearch.name" . }}
+    role: client
