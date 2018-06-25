@@ -57,8 +57,8 @@ node {
       sh "helm install --name='$user_id-$tool_name-$env.BUILD_ID' $tool_name"
   }
 
-  stage('sleeping 8 minutes') {
-    sleep(480)
+  stage('sleeping 3 minutes') {
+    sleep(180)
   }
 
   stage('Verifying running pods') {
