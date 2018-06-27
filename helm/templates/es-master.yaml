@@ -73,4 +73,3 @@ spec:
       dnsPolicy: ClusterFirst
       nodeSelector:
        {{ .Values.nodeSelector.master }} : "true"
-       {{ .Values.nodeSelector.client }} : "true"
