@@ -26,7 +26,7 @@ elasticsearchConfig:
     data: true
   env:
     clustername: edcop
-    javaopts: -Xms16g -Xmx16g
+    javaopts: -Xms4g -Xmx4g
   # Requests are set to accommodate limited resource VMs
   requests:
     cpu: 100m
