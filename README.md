@@ -32,7 +32,7 @@ By default, Elasticsearch is pulled from Elastic's official repository and the C
  
 ```
 images:
-  elasticsearch: docker.elastic.co/elasticsearch/elasticsearch:6.3.1
+  elasticsearch: docker.elastic.co/elasticsearch/elasticsearch:6.3.0
   curator: bobrik/curator
 ```
  
