@@ -36,5 +36,5 @@ spec:
               name: {{ template "elasticsearch.fullname" . }}-curator-config
           restartPolicy: OnFailure 
           nodeSelector:
-            nodetype: {{ .Values.nodeSelector.master }}
+            {{ .Values.nodeSelector.master }} : "true"
 {{- end -}}
