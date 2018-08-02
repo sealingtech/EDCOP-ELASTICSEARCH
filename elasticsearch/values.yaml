@@ -18,7 +18,7 @@ elasticsearchConfig:
   runAsUser: 2000
   # Nodes refers to the number of worker nodes you have
   # NOTE: If you have a one-node cluster, set workerNodes to '0' and master.data to 'true'
-  workerNodes: 2
+  workerNodes: 0
   master:
     # Nodes refers to the number of master nodes you have
     nodes: 1
