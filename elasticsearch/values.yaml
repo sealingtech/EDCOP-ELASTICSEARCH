@@ -26,14 +26,14 @@ elasticsearchConfig:
     data: true
   env:
     clustername: edcop
-    javaopts: -Xms4g -Xmx4g
+    javaopts: -Xms2g -Xmx2g
   # Requests are set to accommodate limited resource VMs
   requests:
     cpu: 100m
     memory: 64Mi
   limits:
-    cpu: 4 
-    memory: 32Gi
+    cpu: 2 
+    memory: 4Gi
 snapshotConfig:
   # Set to 'true' to enable it, false to disable. 
   enabled: false
