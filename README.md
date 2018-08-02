@@ -24,6 +24,10 @@ Table of Contents
 # Deployment Guide
 
 This Elasticsearch chart is designed to be deployed on EDCOP.  By default, this values chart will deploy a single master pod that is suitable for small test environments.  To scale this deploy it will be necessary to properly plan and configure a number of these settings depending on the hardware architecture as well as the amount of data that will be ingested.
+
+More information can be found at https://github.com/sealingtech/EDCOP/blob/master/docs/storage_guide.rst
+
+To prevent data loss, it is important to understand the procedures from this guide.
 	
 # Configuration Guide
 
