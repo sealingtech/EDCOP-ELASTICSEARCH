@@ -1,5 +1,9 @@
 #!/usr/bin/groovy
 
+@Library('github.com/lachie83/jenkins-pipeline@dev')
+def pipeline = new io.estrado.Pipeline()
+
+
 node {
   def app
 
