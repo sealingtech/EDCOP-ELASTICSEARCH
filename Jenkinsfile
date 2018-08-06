@@ -31,33 +31,11 @@ node {
       checkout scm
   }
 
-
-  stage('Build images') {
-      /* This builds the actual image; synonymous to
-       * docker build on the command line */
-      println("Building $container_tag:$env.BUILD_ID and $support_container_tag:$env.BUILD_ID")
-
-      app = docker.build("$container_tag:$env.BUILD_ID","./containers/elasticsearch")
-      app = docker.build("$support_container_tag:$env.BUILD_ID","./containers/curator")
-  }
-
-
-  stage('Push images') {
-      /* Finally, we'll push the images with two tags:
-       * First, the incremental build number from Jenkins
-       * Second, the 'latest' tag.
-       * Pushing multiple tags is cheap, as all the layers are reused. */
-      docker.withRegistry('https://gcr.io/edcop-dev/', 'gcr:edcop-dev') {
-          app.push("$env.BUILD_ID")
-      }
-  }
-
   stage('helm lint') {
       sh "helm lint $tool_name"
   }
 
   stage('helm deploy') {
-      /* Don't actually need the images, the official ones work */
       sh "helm install --name='$user_id-$tool_name-$env.BUILD_ID' $tool_name"
   }
 
