@@ -30,7 +30,7 @@ spec:
       initContainers: 
       - name: es-init
         image: centos
-        command: [“sh”, “-c”, “chown -R {{ .Values.elasticsearchConfig.runAsUser }}:{{ .Values.elasticsearchConfig.fsGroup }} /var/EDCOP/snapshots”]
+        command: ['chown -R {{ .Values.elasticsearchConfig.runAsUser }}:{{ .Values.elasticsearchConfig.fsGroup }} /var/EDCOP/snapshots']
         volumeMounts:
         - mountPath: /var/EDCOP/snapshots
           name: elasticsearch-snapshots
@@ -80,7 +80,7 @@ spec:
           name: elasticsearch-config
         {{- if .Values.snapshotConfig.enabled }}
         - mountPath: /var/EDCOP/snapshots
-          name: elasticsearch-snapshot
+          name: elasticsearch-snapshots
         {{- end }}
 
       volumes:
