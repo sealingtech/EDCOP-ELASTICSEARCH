@@ -26,11 +26,21 @@ spec:
         { "name": "{{ .Values.networks.overlay }}" }
       ]'
     spec:
+      {{- if .Values.snapshotConfig.enabled }}
+      initContainers: 
+      - name: es-init
+        image: centos
+        command: [“sh”, “-c”, “chown -R {{ .Values.elasticsearchConfig.runAsUser }}:{{ .Values.elasticsearchConfig.fsGroup }} /var/EDCOP/snapshots”]
+        volumeMounts:
+        - mountPath: /var/EDCOP/snapshots
+          name: elasticsearch-snapshots
+      {{- end }}
       containers:
       - name: es-client
         image: {{ .Values.images.elasticsearch }}
         securityContext:
           runAsUser: {{ .Values.elasticsearchConfig.runAsUser }}
+          fsGroup: {{ .Values.elasticsearchConfig.fsGroup }}
         env:
         - name: NAMESPACE
           valueFrom:

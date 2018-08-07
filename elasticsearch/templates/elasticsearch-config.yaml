@@ -89,6 +89,8 @@ data:
     # For more information, consult the gateway module documentation.
     #
     # ---------------------------------- Various -----------------------------------
+    index.number_of_shards: {{ .Values.elasticsearchConfig.index.number_of_shards }}
+    index.auto_expand_replicas: {{ .Values.elasticsearchConfig.index.auto_expand_replicas }}
     #
     # Require explicit names when deleting indices:
     #

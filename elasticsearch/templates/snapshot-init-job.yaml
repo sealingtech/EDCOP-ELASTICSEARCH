@@ -19,7 +19,7 @@ spec:
       - name: snapshot-init-job
         image: centos
         imagePullPolicy: Always
-        command: ["/snapshot-init.sh"]
+        command: ["yum", "install", "-y", "epel-release", "&&", "yum", "install", "-y", "jq", "&&" "/snapshot-init.sh"]
         volumeMounts:
         - name: snapshot-init-script
           mountPath: /snapshot-init.sh
