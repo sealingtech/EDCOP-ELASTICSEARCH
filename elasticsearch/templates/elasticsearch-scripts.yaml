@@ -1,4 +1,44 @@
-{{- if .Values.snapshotConfig.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "elasticsearch.fullname" . }}-index-settings-script
+  namespace: {{ .Values.namespace }}
+data:
+  index-settings.sh: |
+    #!/bin/bash
+    # Script to set Elasticsearch index settings via templating 
+  
+    # Wait for Elasticsearch to start
+    echo "Waiting for Elasticsearch to start..."
+    ESSTATUS=""
+    until [ "$ESSTATUS" == "green" ] || [ "$ESSTATUS" == "yellow" ]; do
+      ESSTATUS=$(curl -X --head "data-service:9200/_cluster/health?wait_for_status=green" | jq --raw-output '.status')
+    done
+    
+    # Check to see if the template exists
+    echo "Checking to see if template exists..."
+    TEMPLATESTATUS=$(curl -X --head "data-service:9200/_template/index_settings" | jq --raw-output '.status')
+    
+    # If not, create the template
+    if [ "$TEMPLATESTATUS" = "404" ]
+    then
+      echo "Index settings template not found, creating..."
+      curl -X PUT "data-service:9200/_template/index_settings" -H 'Content-Type: application/json' -d'
+      {
+        "index_patterns" : ["*"],
+        "settings": {
+          "number_of_shards" : {{ .Values.elasticsearchConfig.index.number_of_shards }},
+          "auto_expand_replicas:" : {{ .Values.elasticsearchConfig.index.auto_expand_replicas }}
+        }
+      }
+      '
+    else
+      echo "Index settings template already exists, exiting..."
+      exit
+    fi
+    
+---
+{{- if .Values.snapshotConfig.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -8,15 +48,11 @@ data:
   snapshot.sh: |
     #!/bin/bash
     # Script to create Elasticsearch snapshots
-    
-    # Need jq for checking 
-    yum install -y epel-release
-    yum install -y jq
 
     # Check to make sure Elasticsearch is alive
     echo "Checking to see if Elasticsearch is started..."
     ESSTATUS=""
-    until [ "$ESSTATUS" == "green" ]; do
+    until [ "$ESSTATUS" == "green" ] || [ "$ESSTATUS" == "yellow" ]; do
       ESSTATUS=$(curl -X --head "data-service:9200/_cluster/health?wait_for_status=green" | jq --raw-output '.status')
     done
 
@@ -39,7 +75,7 @@ data:
     # Wait for Elasticsearch to start
     echo "Waiting for Elasticsearch to start..."
     ESSTATUS=""
-    until [ "$ESSTATUS" == "green" ]; do
+    until [ "$ESSTATUS" == "green" ] || [ "$ESSTATUS" == "yellow" ]; do
       ESSTATUS=$(curl -X --head "data-service:9200/_cluster/health?wait_for_status=green" | jq --raw-output '.status')
     done
     
@@ -64,4 +100,5 @@ data:
       echo "Snapshot index already exists, exiting..."
       exit
     fi
-{{- end -}}
+{{- end }}
+    
