@@ -20,7 +20,7 @@ data:
     TEMPLATESTATUS=$(curl -X --head "data-service:9200/_template/index_settings" | jq --raw-output '.status')
     
     # If not, create the template
-    if [ "$TEMPLATESTATUS" = "404" ]
+    if [ "$TEMPLATESTATUS" == "null" ]
     then
       echo "Index settings template not found, creating..."
       curl -X PUT "data-service:9200/_template/index_settings" -H 'Content-Type: application/json' -d'
@@ -84,7 +84,7 @@ data:
     INDEXSTATUS=$(curl -X --head "data-service:9200/_snapshot/es_6x_snapshots" | jq --raw-output '.status')
 
     # If not, create the index
-    if [ "$INDEXSTATUS" = "404" ]
+    if [ "$INDEXSTATUS" == "404" ]
     then
       echo "Snapshot index not found, creating..."
       curl -X PUT "data-service:9200/_snapshot/es_6x_snapshots" -H 'Content-Type: application/json' -d'
