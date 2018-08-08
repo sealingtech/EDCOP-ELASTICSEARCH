@@ -30,7 +30,7 @@ data:
         "index_patterns" : ["*"],
         "settings": {
           "number_of_shards" : {{ .Values.elasticsearchConfig.index.number_of_shards }},
-          "auto_expand_replicas" : {{ .Values.elasticsearchConfig.index.auto_expand_replicas }}
+          "auto_expand_replicas" : {{ .Values.elasticsearchConfig.index.auto_expand_replicas | quote }}
         }
       }
       '
