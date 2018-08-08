@@ -12,12 +12,12 @@ data:
     echo "Waiting for Elasticsearch to start..."
     ESSTATUS=""
     until [ "$ESSTATUS" == "green" ] || [ "$ESSTATUS" == "yellow" ]; do
-      ESSTATUS=$(curl -X --head "data-service:9200/_cluster/health?wait_for_status=green" | jq --raw-output '.status')
+      ESSTATUS=$(curl -X --head --silent "data-service:9200/_cluster/health?wait_for_status=green" | jq --raw-output '.status')
     done
     
     # Check to see if the template exists
     echo "Checking to see if template exists..."
-    TEMPLATESTATUS=$(curl -X --head "data-service:9200/_template/index_settings" | jq --raw-output '.status')
+    TEMPLATESTATUS=$(curl -X --head --silent "data-service:9200/_template/index_settings" | jq --raw-output '.status')
     
     # If not, create the template
     if [ "$TEMPLATESTATUS" == "null" ]
@@ -53,7 +53,7 @@ data:
     echo "Checking to see if Elasticsearch is started..."
     ESSTATUS=""
     until [ "$ESSTATUS" == "green" ] || [ "$ESSTATUS" == "yellow" ]; do
-      ESSTATUS=$(curl -X --head "data-service:9200/_cluster/health?wait_for_status=green" | jq --raw-output '.status')
+      ESSTATUS=$(curl -X --head --silent "data-service:9200/_cluster/health?wait_for_status=green" | jq --raw-output '.status')
     done
 
     DATE=`date +%m-%d-%Y`
@@ -76,12 +76,12 @@ data:
     echo "Waiting for Elasticsearch to start..."
     ESSTATUS=""
     until [ "$ESSTATUS" == "green" ] || [ "$ESSTATUS" == "yellow" ]; do
-      ESSTATUS=$(curl -X --head "data-service:9200/_cluster/health?wait_for_status=green" | jq --raw-output '.status')
+      ESSTATUS=$(curl -X --head --silent "data-service:9200/_cluster/health?wait_for_status=green" | jq --raw-output '.status')
     done
     
     # Check to see if the index exists
     echo "Checking to see if Snapshot index exists..."
-    INDEXSTATUS=$(curl -X --head "data-service:9200/_snapshot/es_6x_snapshots" | jq --raw-output '.status')
+    INDEXSTATUS=$(curl -X --head --silent "data-service:9200/_snapshot/es_6x_snapshots" | jq --raw-output '.status')
 
     # If not, create the index
     if [ "$INDEXSTATUS" == "404" ]
