@@ -7,7 +7,9 @@ data:
   index-settings.sh: |
     #!/bin/bash
     # Script to set Elasticsearch index settings via templating 
-  
+    
+    set -e 
+    
     # Wait for Elasticsearch to start
     echo "Waiting for Elasticsearch to start..."
     ESSTATUS=""
@@ -23,12 +25,12 @@ data:
     if [ "$TEMPLATESTATUS" == "null" ]
     then
       echo "Index settings template not found, creating..."
-      curl -X PUT "data-service:9200/_template/index_settings" -H 'Content-Type: application/json' -d'
+      curl --silent -X PUT "data-service:9200/_template/index_settings" -H 'Content-Type: application/json' -d'
       {
         "index_patterns" : ["*"],
         "settings": {
           "number_of_shards" : {{ .Values.elasticsearchConfig.index.number_of_shards }},
-          "auto_expand_replicas:" : {{ .Values.elasticsearchConfig.index.auto_expand_replicas }}
+          "auto_expand_replicas" : {{ .Values.elasticsearchConfig.index.auto_expand_replicas }}
         }
       }
       '
@@ -59,7 +61,7 @@ data:
     DATE=`date +%m-%d-%Y`
     DATE="${DATE//-/_}"
     
-    curl -X PUT "data-service:9200/_snapshot/es_6x_snapshots/snapshot_$DATE?wait_for_completion=true"
+    curl --silent -X PUT "data-service:9200/_snapshot/es_6x_snapshots/snapshot_$DATE?wait_for_completion=true"
     
 ---
 apiVersion: v1
@@ -87,7 +89,7 @@ data:
     if [ "$INDEXSTATUS" == "404" ]
     then
       echo "Snapshot index not found, creating..."
-      curl -X PUT "data-service:9200/_snapshot/es_6x_snapshots" -H 'Content-Type: application/json' -d'
+      curl --silent -X PUT "data-service:9200/_snapshot/es_6x_snapshots" -H 'Content-Type: application/json' -d'
       {
         "type": "fs",
         "settings": {
