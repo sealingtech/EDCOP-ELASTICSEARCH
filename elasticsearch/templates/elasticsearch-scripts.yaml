@@ -20,10 +20,10 @@ data:
     
     # Check to see if the template exists
     echo "Checking to see if template exists..."
-    TEMPLATESTATUS=$(curl -X --head --silent "data-service:9200/_template/index_settings" | jq --raw-output '.status')
+    TEMPLATESTATUS=$(curl -X --head --silent "data-service:9200/_template/index_settings")
     
     # If not, create the template
-    if [ "$TEMPLATESTATUS" == "null" ]
+    if [ "$TEMPLATESTATUS" == "{}" ]
     then
       echo "Index settings template not found, creating..."
       curl --silent -X PUT "data-service:9200/_template/index_settings" -H 'Content-Type: application/json' -d'
