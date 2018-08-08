@@ -9,6 +9,7 @@ data:
     # Script to set Elasticsearch index settings via templating 
     
     set -e 
+    sleep 30s
     
     # Wait for Elasticsearch to start
     echo "Waiting for Elasticsearch to start..."
@@ -74,6 +75,9 @@ data:
     #!/bin/bash
     # Script to create Elasticsearch's snapshot index if it's not there already
 
+    set -e
+    sleep 30s
+    
     # Wait for Elasticsearch to start
     echo "Waiting for Elasticsearch to start..."
     ESSTATUS=""
