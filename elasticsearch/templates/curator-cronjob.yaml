@@ -17,6 +17,10 @@ spec:
       template:
         metadata:
           name: {{ template "elasticsearch.name" . }}-curator
+          annotations:
+            networks: '[
+            { "name": "{{ .Values.networks.overlay }}" }
+          ]'
         spec:
           containers:
           - name: curator

@@ -31,14 +31,11 @@ node {
       checkout scm
   }
 
-
-
   stage('helm lint') {
       sh "helm lint $tool_name"
   }
 
   stage('helm deploy') {
-      /* Don't actually need the images, the official ones work */
       sh "helm install --name='$user_id-$tool_name-$env.BUILD_ID' $tool_name"
   }
 

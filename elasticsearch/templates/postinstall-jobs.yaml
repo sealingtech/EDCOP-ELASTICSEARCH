@@ -1,0 +1,71 @@
+{{- if .Values.snapshotConfig.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "elasticsearch.fullname" . }}-snapshot-post-install-job
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "elasticsearch.name" . }}-snapshot
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  template:
+    metadata:
+      name: {{ template "elasticsearch.name" . }}-snapshot-job
+      annotations:
+        "helm.sh/hook": "post-install"  # Run after all other services start
+        networks: '[
+        { "name": "{{ .Values.networks.overlay }}" }
+      ]'
+    spec:
+      containers:
+      - name: snapshot-init-job
+        image: centos
+        imagePullPolicy: Always
+        command: ["bash","-c","yum install -y epel-release && yum install -y jq && /snapshot-init.sh"]
+        volumeMounts:
+        - name: snapshot-init-script
+          mountPath: /snapshot-init.sh
+          subPath: snapshot-init.sh
+      volumes:
+      - name: snapshot-init-script
+        configMap:
+          name: {{ template "elasticsearch.fullname" . }}-snapshot-init-script
+          defaultMode: 0744
+      restartPolicy: OnFailure
+{{- end }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "elasticsearch.fullname" . }}-index-settings-job
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "elasticsearch.name" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  template:
+    metadata:
+      name: {{ template "elasticsearch.name" . }}-index-settings-job
+      annotations:
+        "helm.sh/hook": "post-install"  # Run after all other services start
+        networks: '[
+        { "name": "{{ .Values.networks.overlay }}" }
+      ]'
+    spec:
+      containers:
+      - name: index-settings
+        image: centos
+        imagePullPolicy: Always
+        command: ["bash","-c","yum install -y epel-release && yum install -y jq && /index-settings.sh"]
+        volumeMounts:
+        - name: index-settings-script
+          mountPath: /index-settings.sh
+          subPath: index-settings.sh
+      volumes:
+      - name: index-settings-script
+        configMap:
+          name: {{ template "elasticsearch.fullname" . }}-index-settings-script
+          defaultMode: 0744
+      restartPolicy: OnFailure
