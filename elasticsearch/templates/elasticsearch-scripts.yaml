@@ -64,7 +64,7 @@ data:
     DATE="${DATE//-/_}"
     
     # Take snapshots
-    echo "Connected to Elasticsearch, taking snapshots..."
+    echo "Connected to Elasticsearch, taking snapshot snapshot_$DATE..."
     curl --silent -X PUT "data-service:9200/_snapshot/es_6x_snapshots/snapshot_$DATE?wait_for_completion=true"
     
 ---
