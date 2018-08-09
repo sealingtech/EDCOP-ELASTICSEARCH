@@ -59,9 +59,12 @@ data:
       ESSTATUS=$(curl -X --head --silent "data-service:9200/_cluster/health?wait_for_status=green" | jq --raw-output '.status')
     done
 
+    # Getting date
     DATE=`date +%m-%d-%Y`
     DATE="${DATE//-/_}"
     
+    # Take snapshots
+    echo "Connected to Elasticsearch, taking snapshots..."
     curl --silent -X PUT "data-service:9200/_snapshot/es_6x_snapshots/snapshot_$DATE?wait_for_completion=true"
     
 ---
