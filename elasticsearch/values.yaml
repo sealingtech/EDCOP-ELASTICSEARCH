@@ -33,6 +33,12 @@ elasticsearchConfig:
   env:
     clustername: edcop
     javaopts: -Xms2g -Xmx2g
+  jvm:
+    # Xms represents the initial size of total heap space
+    # Xmx represents the maximum size of total heap space
+    xmx: 2g
+    xms: 2g
+    
   # Requests are set to accommodate limited resource VMs
   requests:
     cpu: 100m
