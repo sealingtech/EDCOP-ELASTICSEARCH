@@ -1,0 +1,415 @@
+{{- if .Values.elasticsearchConfig.breakoutRoles -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "elasticsearch.fullname" . }}-master
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "elasticsearch.name" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: {{ template "elasticsearch.name" . }}
+    role: master
+spec:
+  serviceName: "es-discovery"
+  replicas: {{ .Values.elasticsearchConfig.breakoutRolesSettings.master.nodes }}
+  selector:
+    matchLabels:
+      app: {{ template "elasticsearch.name" . }}
+      component: {{ template "elasticsearch.name" . }}
+      role: master
+  template:
+    metadata:
+      name: {{ template "elasticsearch.name" . }}-master
+      labels:
+        app: {{ template "elasticsearch.name" . }}
+        component: {{ template "elasticsearch.name" . }}
+        role: master
+      annotations:
+        networks: '[
+        { "name": "{{ .Values.networks.overlay }}" }
+      ]'
+    spec:
+      {{- if .Values.snapshotConfig.enabled }}
+      initContainers: 
+      - name: init
+        image: centos
+        command: ["bash","-c",'chown -R {{ .Values.elasticsearchConfig.runAsUser }}:{{ .Values.elasticsearchConfig.fsGroup }} /var/EDCOP/snapshots']
+        volumeMounts:
+        - mountPath: /var/EDCOP/snapshots
+          name: elasticsearch-snapshots
+      {{- end }}
+      containers:
+      - name: elasticsearch
+        image: {{ .Values.images.elasticsearch }}
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: {{ .Values.elasticsearchConfig.runAsUser }}
+          fsGroup: {{ .Values.elasticsearchConfig.fsGroup }}
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+            scheme: HTTP 
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 9300
+          failureThreshold: 3
+          initialDelaySeconds: 45
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 1
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: CLUSTER_NAME
+          value: {{ .Values.elasticsearchConfig.clustername }}
+        - name: NODE_MASTER
+          value: "true"
+        - name: NODE_INGEST
+          value: "false"
+        - name: NODE_DATA
+          value: "false"
+        - name: HTTP_ENABLE
+          value: "true"
+        - name: NETWORK_HOST
+          value: _eth0_,_lo_
+        - name: ES_JAVA_OPTS
+          value: "-XX:UseAVX=2 {{ .Values.elasticsearchConfig.breakoutRolesSettings.master.env.javaopts }}"
+        - name: DISCOVERY_SERVICE
+          value: es-discovery
+        ports:
+        - name: http-9200
+          containerPort: 9200
+        - name: tcp-9300
+          containerPort: 9300
+        resources:
+          requests:
+            cpu: "{{ .Values.elasticsearchConfig.breakoutRolesSettings.master.resources.requests.cpu }}"
+            memory: "{{ .Values.elasticsearchConfig.breakoutRolesSettings.master.resources.requests.memory }}"
+          limits:
+            cpu: "{{ .Values.elasticsearchConfig.breakoutRolesSettings.master.resources.limits.cpu }}"
+            memory: "{{ .Values.elasticsearchConfig.breakoutRolesSettings.master.resources.limits.memory }}"
+        volumeMounts:
+        - mountPath: /usr/share/elasticsearch/data
+          name: esdata
+        - mountPath: /usr/share/elasticsearch/config/jvm.options
+          subPath: jvm.options
+          name: elasticsearch-jvm
+        - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+          subPath: elasticsearch.yml
+          name: elasticsearch-config
+        {{- if .Values.snapshotConfig.enabled }}
+        - mountPath: /var/EDCOP/snapshots
+          name: elasticsearch-snapshots
+        {{- end }}
+
+      volumes:
+      - name: esdata
+        emptyDir:
+          medium: ""
+      - name: elasticsearch-jvm
+        configMap:
+          name: {{ template "elasticsearch.fullname" . }}-master-jvm
+      - name: elasticsearch-config
+        configMap:
+          name: {{ template "elasticsearch.fullname" . }}-config
+      {{- if .Values.snapshotConfig.enabled }}
+      - name: elasticsearch-snapshots
+        persistentVolumeClaim:
+          claimName: {{ template "elasticsearch.name" . }}-snapshots
+      {{- end }}
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        {{ .Values.nodeSelector.master }} : "true"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "elasticsearch.fullname" . }}-client
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "elasticsearch.name" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: {{ template "elasticsearch.name" . }}
+    role: client
+spec:
+  replicas: {{ .Values.elasticsearchConfig.breakoutRolesSettings.client.nodes }}
+  selector:
+    matchLabels:
+      component: {{ template "elasticsearch.name" . }}
+      role: client
+  template:
+    metadata:
+      name: {{ template "elasticsearch.name" . }}-client
+      labels:
+        component: {{ template "elasticsearch.name" . }}
+        role: client
+      annotations:
+        networks: '[
+        { "name": "{{ .Values.networks.overlay }}" }
+      ]'
+    spec:
+      {{- if .Values.snapshotConfig.enabled }}
+      initContainers: 
+      - name: init
+        image: centos
+        command: ["bash","-c",'chown -R {{ .Values.elasticsearchConfig.runAsUser }}:{{ .Values.elasticsearchConfig.fsGroup }} /var/EDCOP/snapshots']
+        volumeMounts:
+        - mountPath: /var/EDCOP/snapshots
+          name: elasticsearch-snapshots
+      {{- end }}
+      containers:
+      - name: elasticsearch
+        image: {{ .Values.images.elasticsearch }}
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: {{ .Values.elasticsearchConfig.runAsUser }}
+          fsGroup: {{ .Values.elasticsearchConfig.fsGroup }}
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+            scheme: HTTP 
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 9300
+          failureThreshold: 3
+          initialDelaySeconds: 45
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 1
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: CLUSTER_NAME
+          value: {{ .Values.elasticsearchConfig.clustername }}
+        - name: NODE_MASTER
+          value: "false"
+        - name: NODE_INGEST
+          value: "true"
+        - name: NODE_DATA
+          value: "false"
+        - name: HTTP_ENABLE
+          value: "true"
+        - name: NETWORK_HOST
+          value: _eth0_,_lo_
+        - name: ES_JAVA_OPTS
+          value: "-XX:UseAVX=2 {{ .Values.elasticsearchConfig.breakoutRolesSettings.client.env.javaopts }}"
+        - name: DISCOVERY_SERVICE
+          value: es-discovery
+        ports:
+        - name: http-9200
+          containerPort: 9200
+        - name: tcp-9300
+          containerPort: 9300
+        resources:
+          requests:
+            cpu: "{{ .Values.elasticsearchConfig.breakoutRolesSettings.client.resources.requests.cpu }}"
+            memory: "{{ .Values.elasticsearchConfig.breakoutRolesSettings.client.resources.requests.memory }}"
+          limits:
+            cpu: "{{ .Values.elasticsearchConfig.breakoutRolesSettings.client.resources.limits.cpu }}"
+            memory: "{{ .Values.elasticsearchConfig.breakoutRolesSettings.client.resources.limits.memory }}"
+        volumeMounts:
+        - mountPath: /usr/share/elasticsearch/data
+          name: esdata
+        - mountPath: /usr/share/elasticsearch/config/jvm.options
+          subPath: jvm.options
+          name: elasticsearch-jvm
+        - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+          subPath: elasticsearch.yml
+          name: elasticsearch-config
+        {{- if .Values.snapshotConfig.enabled }}
+        - mountPath: /var/EDCOP/snapshots
+          name: elasticsearch-snapshots
+        {{- end }}
+
+      volumes:
+      - name: esdata
+        emptyDir:
+          medium: ""
+      - name: elasticsearch-jvm
+        configMap:
+          name: {{ template "elasticsearch.fullname" . }}-client-jvm
+      - name: elasticsearch-config
+        configMap:
+          name: {{ template "elasticsearch.fullname" . }}-config
+      {{- if .Values.snapshotConfig.enabled }}
+      - name: elasticsearch-snapshots
+        persistentVolumeClaim:
+          claimName: {{ template "elasticsearch.name" . }}-snapshots
+      {{- end }}
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        {{ .Values.nodeSelector.client }} : "true"
+        
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ template "elasticsearch.fullname" . }}-data
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "elasticsearch.name" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: {{ template "elasticsearch.name" . }}
+    role: data
+spec:
+  selector:
+    matchLabels:
+      component: {{ template "elasticsearch.name" . }}
+      role: data
+  template:
+    metadata:
+      name: {{ template "elasticsearch.name" . }}
+      labels:
+        component: {{ template "elasticsearch.name" . }}
+        role: data
+      annotations:
+        networks: '[
+        { "name": "{{ .Values.networks.overlay }}" }
+      ]'
+    spec:
+      {{- if .Values.snapshotConfig.enabled }}
+      initContainers: 
+      - name: init
+        image: centos
+        command: ["bash","-c",'chown -R {{ .Values.elasticsearchConfig.runAsUser }}:{{ .Values.elasticsearchConfig.fsGroup }} /var/EDCOP/snapshots']
+        volumeMounts:
+        - mountPath: /var/EDCOP/snapshots
+          name: elasticsearch-snapshots
+      {{- end }}
+      containers:
+      - name: elasticsearch
+        image: {{ .Values.images.elasticsearch }}
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: {{ .Values.elasticsearchConfig.runAsUser }}
+          fsGroup: {{ .Values.elasticsearchConfig.fsGroup }}
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+            scheme: HTTP 
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 9300
+          failureThreshold: 3
+          initialDelaySeconds: 45
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 1
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: CLUSTER_NAME
+          value: {{ .Values.elasticsearchConfig.clustername }}
+        - name: NODE_MASTER
+          value: "false"
+        - name: NODE_INGEST
+          value: "false"
+        - name: NODE_DATA
+          value: "true"
+        - name: HTTP_ENABLE
+          value: "true"
+        - name: NETWORK_HOST
+          value: _eth0_,_lo_
+        - name: ES_JAVA_OPTS
+          value: "-XX:UseAVX=2 {{ .Values.elasticsearchConfig.breakoutRolesSettings.data.env.javaopts }}"
+        - name: DISCOVERY_SERVICE
+          value: es-discovery
+        ports:
+        - name: http-9200
+          containerPort: 9200
+        - name: tcp-9300
+          containerPort: 9300
+        resources:
+          requests:
+            cpu: "{{ .Values.elasticsearchConfig.breakoutRolesSettings.data.resources.requests.cpu }}"
+            memory: "{{ .Values.elasticsearchConfig.breakoutRolesSettings.data.resources.requests.memory }}"
+          limits:
+            cpu: "{{ .Values.elasticsearchConfig.breakoutRolesSettings.data.resources.limits.cpu }}"
+            memory: "{{ .Values.elasticsearchConfig.breakoutRolesSettings.data.resources.limits.memory }}"
+        volumeMounts:
+        - mountPath: /usr/share/elasticsearch/data
+          name: esdata
+        - mountPath: /usr/share/elasticsearch/config/jvm.options
+          subPath: jvm.options
+          name: elasticsearch-jvm
+        - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+          subPath: elasticsearch.yml
+          name: elasticsearch-config
+        {{- if .Values.snapshotConfig.enabled }}
+        - mountPath: /var/EDCOP/snapshots
+          name: elasticsearch-snapshots
+        {{- end }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values: 
+                - {{ template "elasticsearch.name" . }}
+              - key: role
+                operator: In
+                values: 
+                - data
+            topologyKey: kubernetes.io/hostname
+      volumes:
+      - name: esdata
+        hostPath:
+          path: {{ .Values.volumes.data }}
+      - name: elasticsearch-jvm
+        configMap:
+          name: {{ template "elasticsearch.fullname" . }}-data-jvm
+      - name: elasticsearch-config
+        configMap:
+          name: {{ template "elasticsearch.fullname" . }}-config
+      {{- if .Values.snapshotConfig.enabled }}
+      - name: elasticsearch-snapshots
+        persistentVolumeClaim:
+          claimName: {{ template "elasticsearch.name" . }}-snapshots
+      {{- end }}
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        {{ .Values.nodeSelector.data }} : "true"
+
+{{- end -}}

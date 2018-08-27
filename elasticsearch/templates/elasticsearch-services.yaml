@@ -5,6 +5,9 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     component: {{ template "elasticsearch.name" . }}
+    {{- if .Values.elasticsearchConfig.breakoutRoles }}
+    role: client
+    {{- end }}
 spec:
   ports:
   - name: tcp-9200
@@ -17,7 +20,10 @@ spec:
     targetPort: 9300
   selector:
     component: {{ template "elasticsearch.name" . }}
-
+    {{- if .Values.elasticsearchConfig.breakoutRoles }}
+    role: client
+    {{- end }}
+    
 ---
 apiVersion: v1
 kind: Service
@@ -25,15 +31,21 @@ metadata:
   name: es-discovery
   namespace: {{ .Values.namespace }}
   labels:
+    app: {{ template "elasticsearch.name" . }}
     component: {{ template "elasticsearch.name" . }}
+    {{- if .Values.elasticsearchConfig.breakoutRoles }}
     role: master
+    {{- end }}
 spec:
   ports:
   - name: tcp-9300
     protocol: TCP
     port: 9300 
     targetPort: 9300
-  selector:
-    component: {{ template "elasticsearch.name" . }}
-    role: master
   clusterIP: None
+  selector:
+    app: {{ template "elasticsearch.name" . }}
+    component: {{ template "elasticsearch.name" . }}
+    {{- if .Values.elasticsearchConfig.breakoutRoles }}
+    role: master
+    {{- end }}

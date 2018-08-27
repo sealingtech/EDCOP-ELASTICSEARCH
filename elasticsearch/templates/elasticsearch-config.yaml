@@ -22,17 +22,20 @@ data:
     # Use a descriptive name for your cluster:
     #
     cluster.name: ${CLUSTER_NAME}
+    cluster.routing.allocation.awareness.attributes: node_name
     #
     # ------------------------------------ Node ------------------------------------
     #
     # Use a descriptive name for the node:
     #
-    node.name: ${HOSTNAME}
     node.master: ${NODE_MASTER}
+    node.ingest: ${NODE_INGEST}
+    node.data: ${NODE_DATA}
+    node.max_local_storage_nodes: {{ .Values.elasticsearchConfig.maxLocalNodes }}
     #
     # Add custom attributes to the node:
     #
-    #node.attr.rack: r1
+    node.attr.node_name: ${NODE_NAME}
     #
     # ----------------------------------- Paths ------------------------------------
     #
