@@ -31,7 +31,7 @@ spec:
       ]'
     spec:
       {{- if .Values.snapshotConfig.enabled }}
-      initContainers: 
+      initContainers:
       - name: init
         image: centos
         command: ["bash","-c",'chown -R {{ .Values.elasticsearchConfig.runAsUser }}:{{ .Values.elasticsearchConfig.fsGroup }} /var/EDCOP/snapshots']
@@ -50,7 +50,7 @@ spec:
           httpGet:
             path: /_cluster/health
             port: 9200
-            scheme: HTTP 
+            scheme: HTTP
           initialDelaySeconds: 20
           periodSeconds: 10
           successThreshold: 1
@@ -73,7 +73,7 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
         - name: CLUSTER_NAME
-          value: {{ .Values.elasticsearchConfig.clustername }} 
+          value: {{ .Values.elasticsearchConfig.clustername }}
         - name: NODE_MASTER
           value: "true"
         - name: NODE_INGEST
@@ -120,11 +120,11 @@ spec:
               matchExpressions:
               - key: app
                 operator: In
-                values: 
+                values:
                 - {{ template "elasticsearch.name" . }}
               - key: role
                 operator: In
-                values: 
+                values:
                 - data
             topologyKey: kubernetes.io/hostname
       volumes:

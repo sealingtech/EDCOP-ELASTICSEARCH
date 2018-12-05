@@ -2,7 +2,7 @@
 
 Table of Contents
 -----------------
- 
+
 * [Configuration Guide](#configuration-guide)
 	* [Image Repository](#image-repository)
 	* [Networks](#networks)
@@ -25,7 +25,7 @@ Table of Contents
 		* [Schedule](#schedule)
 		* [Closing Indices](#closing-indices)
 		* [Deleting Indices](#deleting-indices)
-		
+
 # Deployment Guide
 
 This Elasticsearch chart is designed to be deployed on EDCOP.  By default, this values chart will deploy a single master eligible pod that is suitable for small test environments.  To scale this deployment, it will be necessary to properly plan and configure a number of these settings depending on the hardware architecture as well as the amount of data that will be ingested.
@@ -33,33 +33,33 @@ This Elasticsearch chart is designed to be deployed on EDCOP.  By default, this 
 More information can be found at https://github.com/sealingtech/EDCOP/blob/master/docs/storage_guide.rst
 
 To prevent data loss, it is important to understand the procedures from this guide.
-	
+
 # Configuration Guide
 
 Within this configuration guide, you will find instructions for modifying Elasticsearch's helm chart. All changes should be made in the *values.yaml* file.
 Please share any bugs or feature requests via GitHub issues.
- 
+
 ## Image Repository
 
 By default, Elasticsearch is pulled from Elastic's official repository and the Curator is pulled from a customized image hosted on Docker's hub. If you're changing these values, make sure you include the full repository name.
- 
+
 ```
 images:
-  elasticsearch: docker.elastic.co/elasticsearch/elasticsearch:6.3.0
+  elasticsearch: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
   curator: bobrik/curator
 ```
- 
+
 ## Networks
 
-Elasticsearch only uses an overlay network to transfer data between nodes. By default, this network is named *calico*. 
+Elasticsearch only uses an overlay network to transfer data between nodes. By default, this network is named *calico*.
 
 ```
 networks:
   overlay: calico
 ```
- 
+
 To find the names of your networks, use the following command:
- 
+
 ```
 # kubectl get networks
 NAME		AGE
@@ -71,24 +71,24 @@ inline-2	1d
 
 ## Persistent Volume Storage
 
-These values tell Kubernetes where Elasticsearch's index data should be stored on the host for persistent storage. By default, this value is set to */EDCOP/bulk/esdata* but should be changed according to your logical volume setup. 
+These values tell Kubernetes where Elasticsearch's index data should be stored on the host for persistent storage. By default, this value is set to */EDCOP/bulk/esdata* but should be changed according to your logical volume setup.
 
 ```
 volumes:
   data: /EDCOP/bulk/esdata
 ```
-	  
+
 ## Node Selector
 
-This value tells Kubernetes which hosts the statefulsets should be deployed to by using labels given to the hosts. Hosts without the defined label will not receive pods. If you're deploying Elasticsearch in shared roles mode (default), all pods will be deployed to the data label, and the client + master labels are ignored. 
- 
+This value tells Kubernetes which hosts the statefulsets should be deployed to by using labels given to the hosts. Hosts without the defined label will not receive pods. If you're deploying Elasticsearch in shared roles mode (default), all pods will be deployed to the data label, and the client + master labels are ignored.
+
 ```
 nodeSelector:
   client: ingest
   data: data
   master: infrastructure
 ```
- 
+
 To find out what labels your hosts have, please use the following:
 ```
 # kubectl get nodes --show-labels
@@ -100,7 +100,7 @@ minion-2	Ready		<none>		1d		v1.10.0		...,data=true
 
 ## Elasticsearch Configuration
 
-Elasticsearch is deployed as a statefulset spread across all of the correctly labeled nodes in a single cluster. In shared roles mode, a master will randomly be choosen from *all* of the available pods, and in breakout mode, a master will be choosen from only the master pods. 
+Elasticsearch is deployed as a statefulset spread across all of the correctly labeled nodes in a single cluster. In shared roles mode, a master will randomly be choosen from *all* of the available pods, and in breakout mode, a master will be choosen from only the master pods.
 
 ### General
 
@@ -122,9 +122,9 @@ elasticsearchConfig:
 
 ### Index Settings
 
-In order to better control sharding and replication of indices, you can set the number of shards each index should be divided into to spread your data across nodes. To prevent loss of those shards, you can set the ```auto_expand_replicas``` setting to create replicas of each shard that are spread across nodes. This value should start at zero and end at a number you're comfortable with. As you add nodes, Elasticsearch will automatically expand the number of shard replicas until you hit the upper limit. 
+In order to better control sharding and replication of indices, you can set the number of shards each index should be divided into to spread your data across nodes. To prevent loss of those shards, you can set the ```auto_expand_replicas``` setting to create replicas of each shard that are spread across nodes. This value should start at zero and end at a number you're comfortable with. As you add nodes, Elasticsearch will automatically expand the number of shard replicas until you hit the upper limit.
 
-For example, if you have a 2 node cluster and use the default config, Elasticsearch will expand the replicas to 1 since you have an extra node to replicate to. If you added another node with ```auto_expand_replicas``` set to 0-2, then it would expand replicas again to 2. Adding a fourth node would not add any more replicas because you would already be at the defined limit. 
+For example, if you have a 2 node cluster and use the default config, Elasticsearch will expand the replicas to 1 since you have an extra node to replicate to. If you added another node with ```auto_expand_replicas``` set to 0-2, then it would expand replicas again to 2. Adding a fourth node would not add any more replicas because you would already be at the defined limit.
 
 *For more information, please consult the [official documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html).*
 
@@ -138,9 +138,9 @@ elasticsearchConfig:
 
 ### Shared Roles Settings
 
-Shared roles mode allows all Elasticsearch instances to ingest data, store data, and be master eligible. This means every node is fully functional and there is no separation of roles. Keep in mind, shared roles mode does not allow you to place multiple Elasticsearch pods on the same host within the same cluster, because they all store data. 
+Shared roles mode allows all Elasticsearch instances to ingest data, store data, and be master eligible. This means every node is fully functional and there is no separation of roles. Keep in mind, shared roles mode does not allow you to place multiple Elasticsearch pods on the same host within the same cluster, because they all store data.
 
-For small clusters (<5), we recommend you use the shared roles mode to conserve resources by having Elasticsearch perform all roles across every node. Otherwise, you'd need a pod for each role to form a working Elasticsearch cluster. 
+For small clusters (<5), we recommend you use the shared roles mode to conserve resources by having Elasticsearch perform all roles across every node. Otherwise, you'd need a pod for each role to form a working Elasticsearch cluster.
 
 To enable shared roles mode, set ```breakoutRoles``` to ```false``` and then define how many nodes you'd like to have. Keep in mind, these nodes will be deployed to the data label you defined in the node selector section.
 
@@ -150,7 +150,7 @@ elasticsearchConfig:
   noRolesSettings:
     nodes: 1
 ```
-  
+
 
 #### Environment
 
@@ -187,9 +187,9 @@ noRolesSettings:
 
 ### Breakout Roles Settings
 
-For larger clusters (>5) with frequent queries, we recommend you breakout Elasticsearch roles into master, client, and data nodes to better control resources and dedicate nodes to certain jobs. The master pods are deployed as statefulsets, the client nodes are deployed as deployments, and the data nodes are deployed as daemonsets. Each node adheres to the labels you defined in the node selector section. 
+For larger clusters (>5) with frequent queries, we recommend you breakout Elasticsearch roles into master, client, and data nodes to better control resources and dedicate nodes to certain jobs. The master pods are deployed as statefulsets, the client nodes are deployed as deployments, and the data nodes are deployed as daemonsets. Each node adheres to the labels you defined in the node selector section.
 
-To enable breakout roles mode, set ```breakoutRoles``` to ```true``` and then proceed to define each roles' configuration. 
+To enable breakout roles mode, set ```breakoutRoles``` to ```true``` and then proceed to define each roles' configuration.
 
 ```
 elasticsearchConfig:
@@ -232,7 +232,7 @@ If you want to backup your indices to Kubernetes NFS storage, you can enable per
 
 ### Schedule
 
-As mentioned before, the Snapshots are run as Kubernetes Cron Jobs, which use the Cron format as described [here](http://www.nncron.ru/help/EN/working/cron-format.htm). The default setting runs once per day, but you might want to increase this in production. 
+As mentioned before, the Snapshots are run as Kubernetes Cron Jobs, which use the Cron format as described [here](http://www.nncron.ru/help/EN/working/cron-format.htm). The default setting runs once per day, but you might want to increase this in production.
 
 ```
 snapshotConfig:
@@ -249,7 +249,7 @@ snapshotConfig:
 pvc:
   storage: 10Gi
 ```
- 
+
 
 ## Curator Configuration
 
@@ -280,7 +280,7 @@ curatorConfig:
 
 ### Deleting Indices
 
-The second action the Curator will perform deletes indices that are older than the specified amount of time. The default time for deletion is 14 days and you can always disable this action as well by setting *disable_action* to True. For more information on deleting indices, please click [here](https://www.elastic.co/guide/en/elasticsearch/client/curator/current/delete_indices.html). 
+The second action the Curator will perform deletes indices that are older than the specified amount of time. The default time for deletion is 14 days and you can always disable this action as well by setting *disable_action* to True. For more information on deleting indices, please click [here](https://www.elastic.co/guide/en/elasticsearch/client/curator/current/delete_indices.html).
 
 ```
 curatorConfig:

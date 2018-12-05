@@ -19,9 +19,9 @@ spec:
     spec:
       containers:
       - name: post-installs
-        image: centos
+        image: {{ .Values.images.runner }}
         imagePullPolicy: Always
-        command: ["bash","-c","yum install -y epel-release && yum install -y jq && /post-installs.sh"]
+        command: ["/post-installs.sh"]
         volumeMounts:
         - name: post-installs-script
           mountPath: /post-installs.sh

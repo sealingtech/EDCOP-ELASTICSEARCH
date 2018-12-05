@@ -17,12 +17,12 @@ data:
     echo "Waiting for Elasticsearch to start..."
     ESSTATUS=""
     until [ "$ESSTATUS" == "green" ] || [ "$ESSTATUS" == "yellow" ]; do
-      ESSTATUS=$(curl -X --head --silent "data-service:9200/_cluster/health?wait_for_status=green" | jq --raw-output '.status')
+      ESSTATUS=$(curl -X GET --silent "data-service:9200/_cluster/health?wait_for_status=green" | jq --raw-output '.status')
     done
     
     # Check to see if the template exists
     echo "Checking to see if template exists..."
-    TEMPLATESTATUS=$(curl -X --head --silent "data-service:9200/_template/index_settings")
+    TEMPLATESTATUS=$(curl -X GET --silent "data-service:9200/_template/index_settings")
     
     # If not, create the template
     if [ "$TEMPLATESTATUS" == "{}" ]

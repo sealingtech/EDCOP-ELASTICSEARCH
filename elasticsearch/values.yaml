@@ -2,9 +2,10 @@
 # Place each cluster in a separate namespace for multitenancy
 namespace: default
 images:
-  # Base image (es): docker.elastic.co/elasticsearch/elasticsearch:6.3.0
-  elasticsearch: docker.elastic.co/elasticsearch/elasticsearch:6.3.0
+  # Base image (es): docker.elastic.co/elasticsearch/elasticsearch:6.4.2
+  elasticsearch: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
   curator: bobrik/curator
+  runner: gcr.io/edcop-dev/edcop-runner:4
 networks:
   # Overlay is the name of the default cni network
   overlay: calico
@@ -14,32 +15,32 @@ volumes:
   data: /EDCOP/bulk/esdata
 nodeSelector:
   # If breakoutRoles is set to 'false' in the section below, Elasticsearch nodes
-  # will be scheduled to DATA nodes only - client and master selectors will be ignored. 
+  # will be scheduled to DATA nodes only - client and master selectors will be ignored.
   client: ingest
   data: data
   master: infrastructure
 elasticsearchConfig:
   clustername: edcop
-  # Increase this number to allow for multiple Elasticsearch clusters (separate namespaces ONLY!) to exist on the same box. 
+  # Increase this number to allow for multiple Elasticsearch clusters (separate namespaces ONLY!) to exist on the same box.
   maxLocalNodes: 1
   # runAsUser refers to the UID of the user who owns the persistent data location specified above
-  # fsGroup refers to the group ID the container should run as 
+  # fsGroup refers to the group ID the container should run as
   runAsUser: 2000
   fsGroup: 2001
   # Applies to all indices, https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html
   index:
     number_of_shards: 5
     auto_expand_replicas: 0-2
-  # If breakoutRoles is set to false, noRolesSettings will be used and breakoutRolesSettings will be ignored, and vice versa. 
+  # If breakoutRoles is set to false, noRolesSettings will be used and breakoutRolesSettings will be ignored, and vice versa.
   # No Roles mode allows all Elasticsearch nodes to be 'master eligible,' store data, and process requests. Essentially, the nodes
-  # do all roles across every instance. Masters will be selected randomly from the list of nodes and all nodes store data. 
+  # do all roles across every instance. Masters will be selected randomly from the list of nodes and all nodes store data.
   # Breakout mode separates the roles into master, client, and data nodes so you have better control over resource allocation. Each type
   # has its specific role and its own settings for more customization.
-  # ** Breakout mode is only recommended for large clusters (5+ nodes) with frequent queries 
-  breakoutRoles: true
+  # ** Breakout mode is only recommended for large clusters (5+ nodes) with frequent queries
+  breakoutRoles: false
   noRolesSettings:
     # Nodes refers to the number of Elasticsearch nodes you have if 'breakoutRoles' is set to 'false'
-    # These nodes will perform all Elasticsearch functions within each instance. 
+    # These nodes will perform all Elasticsearch functions within each instance.
     nodes: 1
     env:
       javaopts: -Xms2g -Xmx2g
@@ -54,13 +55,13 @@ elasticsearchConfig:
         cpu: 100m
         memory: 64Mi
       limits:
-        cpu: 2 
+        cpu: 2
         memory: 4Gi
   breakoutRolesSettings:
-    # Must have at least one node of each type 
+    # Must have at least one node of each type
     master:
-      # Master nodes control cluster functions only. They do not store data, query indices, or ingest data. 
-      # As such, they do not require lots of resources because their load is rather light. 
+      # Master nodes control cluster functions only. They do not store data, query indices, or ingest data.
+      # As such, they do not require lots of resources because their load is rather light.
       # Minimum 3 for high availability
       nodes: 1
       env:
@@ -76,7 +77,7 @@ elasticsearchConfig:
           cpu: 100m
           memory: 64Mi
         limits:
-          cpu: 2 
+          cpu: 2
           memory: 4Gi
     client:
       # client nodes are in charge of ingesting data and querying indices, they do not store data.
@@ -94,11 +95,11 @@ elasticsearchConfig:
           cpu: 100m
           memory: 64Mi
         limits:
-          cpu: 2 
+          cpu: 2
           memory: 4Gi
     data:
-      # Data nodes CANNOT be scheduled on the same node as they are deployed as DaemonSets. 
-      # Additionally, they are the only node type that can store data in breakout mode 
+      # Data nodes CANNOT be scheduled on the same node as they are deployed as DaemonSets.
+      # Additionally, they are the only node type that can store data in breakout mode
       env:
         javaopts: -Xms2g -Xmx2g
         jvm:
@@ -112,10 +113,10 @@ elasticsearchConfig:
           cpu: 100m
           memory: 64Mi
         limits:
-          cpu: 2 
+          cpu: 2
           memory: 4Gi
 snapshotConfig:
-  # Set to 'true' to enable it, false to disable. 
+  # Set to 'true' to enable it, false to disable.
   enabled: false
   # Input how often snapshots should be taken in cronjob format
   cronjob_schedule: "1 0 * * *"
@@ -126,13 +127,13 @@ snapshotConfig:
   pvc:
     storage: 10Gi
 curatorConfig:
-  # Set to 'true' to enable it, false to disable. 
+  # Set to 'true' to enable it, false to disable.
   enabled: false
   # Input how often the curator should run in cronjob format
   cronjob_schedule: "1 0 * * *"
   # Input how many failed/successful pods should be kept after completion (0 for none)
   failedPodsLimit: 1
-  successfulJobsLimit: 1     
+  successfulJobsLimit: 1
   actions:
     close:
       # (True or False) Set to False to enable this feature.
@@ -145,5 +146,4 @@ curatorConfig:
       disable_action: False
       # Deletes indices older than the specified units
       unit: days
-      unit_count: 14 
-    
+      unit_count: 14

@@ -24,9 +24,9 @@ spec:
         spec:
           containers:
           - name: snapshot
-            image: centos
+            image: {{ .Values.images.runner }}
             imagePullPolicy: Always
-            command: ["bash","-c","yum install -y epel-release && yum install -y jq && /snapshot.sh"]
+            command: ["/snapshot.sh"]
             volumeMounts:
               - name: snapshot-script
                 mountPath: /snapshot.sh

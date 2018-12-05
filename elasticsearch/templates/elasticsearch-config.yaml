@@ -46,12 +46,12 @@ data:
     # Path to log files:
     #
     #path.logs: /path/to/logs
-    # 
+    #
     # ----------------------------------- Memory -----------------------------------
     #
     # Lock the memory on startup:
     #
-    #bootstrap.memory_lock: true
+    bootstrap.memory_lock: false
     #
     # Make sure that the heap size is set to about half the memory available
     # on the system and that the owner of the process is allowed to use this
@@ -68,7 +68,7 @@ data:
     # Set a custom port for HTTP:
     #
     http.port: 9200
-    # 
+    #
     # For more information, consult the network module documentation.
     #
     # --------------------------------- Discovery ----------------------------------
@@ -97,16 +97,8 @@ data:
     #
     #action.destructive_requires_name: true
     # ---------------------------------- X-Pack ------------------------------------
-    # Disable X-Pack paid services, enable monitoring
-    xpack.graph.enabled: false
-    xpack.ml.enabled: false
-    xpack.security.enabled: false
-    xpack.watcher.enabled: false
-    xpack.monitoring.enabled: true
 {{ if .Values.snapshotConfig.enabled }}
     # --------------------------------- Snapshots ----------------------------------
     # Location of NFS storage for snapshots
     path.repo: ["/var/EDCOP/snapshots"]
 {{ end }}
-
-

@@ -31,7 +31,7 @@ spec:
       ]'
     spec:
       {{- if .Values.snapshotConfig.enabled }}
-      initContainers: 
+      initContainers:
       - name: init
         image: centos
         command: ["bash","-c",'chown -R {{ .Values.elasticsearchConfig.runAsUser }}:{{ .Values.elasticsearchConfig.fsGroup }} /var/EDCOP/snapshots']
@@ -50,7 +50,7 @@ spec:
           httpGet:
             path: /_cluster/health
             port: 9200
-            scheme: HTTP 
+            scheme: HTTP
           initialDelaySeconds: 20
           periodSeconds: 10
           successThreshold: 1
@@ -164,7 +164,7 @@ spec:
       ]'
     spec:
       {{- if .Values.snapshotConfig.enabled }}
-      initContainers: 
+      initContainers:
       - name: init
         image: centos
         command: ["bash","-c",'chown -R {{ .Values.elasticsearchConfig.runAsUser }}:{{ .Values.elasticsearchConfig.fsGroup }} /var/EDCOP/snapshots']
@@ -183,7 +183,7 @@ spec:
           httpGet:
             path: /_cluster/health
             port: 9200
-            scheme: HTTP 
+            scheme: HTTP
           initialDelaySeconds: 20
           periodSeconds: 10
           successThreshold: 1
@@ -266,7 +266,7 @@ spec:
       dnsPolicy: ClusterFirst
       nodeSelector:
         {{ .Values.nodeSelector.client }} : "true"
-        
+
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -296,7 +296,7 @@ spec:
       ]'
     spec:
       {{- if .Values.snapshotConfig.enabled }}
-      initContainers: 
+      initContainers:
       - name: init
         image: centos
         command: ["bash","-c",'chown -R {{ .Values.elasticsearchConfig.runAsUser }}:{{ .Values.elasticsearchConfig.fsGroup }} /var/EDCOP/snapshots']
@@ -315,7 +315,7 @@ spec:
           httpGet:
             path: /_cluster/health
             port: 9200
-            scheme: HTTP 
+            scheme: HTTP
           initialDelaySeconds: 20
           periodSeconds: 10
           successThreshold: 1
@@ -385,11 +385,11 @@ spec:
               matchExpressions:
               - key: app
                 operator: In
-                values: 
+                values:
                 - {{ template "elasticsearch.name" . }}
               - key: role
                 operator: In
-                values: 
+                values:
                 - data
             topologyKey: kubernetes.io/hostname
       volumes:
